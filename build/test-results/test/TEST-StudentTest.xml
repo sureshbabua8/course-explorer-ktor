@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="StudentTest" tests="6" skipped="0" failures="0" errors="0" timestamp="2020-05-04T00:19:39" hostname="TyrionLannister.attlocal.net" time="0.046">
+  <properties/>
+  <testcase name="addGrade()" classname="StudentTest" time="0.025"/>
+  <testcase name="calculateGradeNoDrops()" classname="StudentTest" time="0.003"/>
+  <testcase name="calculateGradeDrops()" classname="StudentTest" time="0.002"/>
+  <testcase name="init()" classname="StudentTest" time="0.001"/>
+  <testcase name="getOverallGradeNoDrops()" classname="StudentTest" time="0.002"/>
+  <testcase name="getOverallGradeDrops()" classname="StudentTest" time="0.001"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>
