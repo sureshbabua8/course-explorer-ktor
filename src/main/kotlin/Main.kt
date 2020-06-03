@@ -1,6 +1,7 @@
-@file:Suppress("SpellCheckingInspection")
-
 package hello
+
+import com.fasterxml.jackson.dataformat.xml.XmlMapper
+import com.google.gson.Gson
 import io.ktor.application.Application
 import io.ktor.application.call
 import io.ktor.application.install
@@ -10,32 +11,31 @@ import io.ktor.client.request.get
 import io.ktor.features.ContentNegotiation
 import io.ktor.gson.gson
 import io.ktor.response.respond
-import io.ktor.response.respondBytes
 import io.ktor.response.respondText
 import io.ktor.routing.get
 import io.ktor.routing.routing
 import io.ktor.server.engine.embeddedServer
 import io.ktor.server.netty.Netty
-import java.util.logging.XMLFormatter
-import javax.xml.crypto.dsig.XMLObject
+import com.fasterxml.jackson.module.kotlin.readValue
+import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 
-suspend fun foo(): ByteArray {
-    val client = HttpClient(CIO)
-
-    // Get the content of an URL.
-    return client.get<ByteArray>("https://courses.illinois.edu/cisapp/explorer/schedule/2012.xml")
-}
+data class Schedule(val id: String)
 
 fun Application.viewCourse() {
     install(ContentNegotiation) {
         gson {
-            setPrettyPrinting()
+
         }
     }
 
     routing {
         get("/") {
-            call.respondBytes(foo())
+            val client = HttpClient(CIO)
+            // Get the content of an URL.
+            val xmlMapper = XmlMapper().registerKotlinModule()
+
+            val xml = client.get<String>("https://courses.illinois.edu/cisapp/explorer/schedule/2012.xml")
+            call.respond(xmlMapper.readValue<Schedule>(xml))
         }
     }
 }
