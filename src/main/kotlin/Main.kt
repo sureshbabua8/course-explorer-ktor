@@ -46,7 +46,8 @@ fun Application.viewCourse() {
             try {
                 xml = client.get("https://courses.illinois.edu/cisapp/explorer/schedule/" + call.parameters["year"] + ".xml")
                 val jsonObj: JSONObject = XML.toJSONObject(xml)
-                val calendar = jsonObj.getJSONObject("ns2:calendarYear")
+                jsonObj.put("calendarYear", jsonObj.remove("ns2:calendarYear"))
+                val calendar = jsonObj.getJSONObject("calendarYear")
                 calendar.remove("label")
                 calendar.remove("xmlns:ns2")
                 calendar.put("term", calendar.getJSONObject("terms").getJSONArray("term"))
@@ -62,7 +63,8 @@ fun Application.viewCourse() {
                 xml = client.get("https://courses.illinois.edu/cisapp/explorer/schedule/" +
                         call.parameters["year"] + "/" + call.parameters["term"] + ".xml")
                 val jsonObj: JSONObject = XML.toJSONObject(xml)
-                val term = jsonObj.getJSONObject("ns2:term")
+                jsonObj.put("term", jsonObj.remove("ns2:term"))
+                val term = jsonObj.getJSONObject("term")
                 term.remove("xmlns:ns2")
                 term.remove("id")
                 term.put("subject", term.getJSONObject("subjects").getJSONArray("subject"))
@@ -77,7 +79,8 @@ fun Application.viewCourse() {
             xml = client.get<String>("https://courses.illinois.edu/cisapp/explorer/schedule/" +
                     call.parameters["year"] + "/" + call.parameters["term"] + "/" + call.parameters["course"] + ".xml")
             val jsonObj: JSONObject = XML.toJSONObject(xml)
-            var subject = jsonObj.getJSONObject("ns2:subject")
+            jsonObj.put("subject", jsonObj.remove("ns2:subject"))
+            var subject = jsonObj.getJSONObject("subject")
             subject.remove("label")
             subject.remove("contactName")
             subject.remove("departmentCode")
@@ -88,7 +91,7 @@ fun Application.viewCourse() {
             subject.remove("addressLine2")
             subject.put("course", subject.getJSONObject("courses").getJSONArray("course"))
             subject.remove("courses")
-            call.respondText(jsonObj.toString(4).replace("ns2:subject", "subject").replace("course", "courses"))
+            call.respondText(jsonObj.toString(4).replace("course", "courses"))
 
         }
 
@@ -97,7 +100,8 @@ fun Application.viewCourse() {
                     call.parameters["year"] + "/" + call.parameters["term"] + "/" + call.parameters["course"] + "/" +
                     call.parameters["code"] + ".xml")
             val jsonObj: JSONObject = XML.toJSONObject(xml)
-            val course = jsonObj.getJSONObject("ns2:course")
+            jsonObj.put("course", jsonObj.remove("ns2:course"))
+            val course = jsonObj.getJSONObject("course")
             course.remove("xmlns:ns2")
             course.remove("href")
             val genEd = course.getJSONObject("genEdCategories").get("category")
@@ -107,10 +111,21 @@ fun Application.viewCourse() {
                 course.put("genEd", genEd)
             }
             course.remove("genEdCategories")
-            for (req in course.getJSONArray("genEd")) {
-
+            for (courseElem in course.getJSONArray("genEd")) {
+                val req = courseElem as JSONObject
+                req.put("description", req.getJSONObject("ns2:genEdAttributes").getJSONObject("genEdAttribute").get("content"))
+                req.put("id", req.getJSONObject("ns2:genEdAttributes").getJSONObject("genEdAttribute").get("code"))
+                req.remove("ns2:genEdAttributes")
             }
-            call.respondText(jsonObj.toString(4))
+
+            // reconfig course sections JSON data
+            course.put("section", course.getJSONObject("sections").getJSONArray("section"))
+            course.remove("sections")
+            course.put("courseTitle", course.remove("label"))
+            course.put("courseId", course.remove("id"))
+            course.put("term", course.getJSONObject("parents").getJSONObject("term").get("content"))
+            course.remove("parents")
+            call.respondText(jsonObj.toString(4).replace("section", "sections"))
 
         }
         get("/{year}/{term}/{course}/{code}/{section}") {
