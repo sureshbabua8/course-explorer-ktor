@@ -51,8 +51,12 @@ fun Application.viewCourse() {
                 val calendar = jsonObj.getJSONObject("calendarYear")
                 calendar.remove("label")
                 calendar.remove("xmlns:ns2")
+                calendar.put("year", calendar.remove("id"))
                 calendar.put("term", calendar.getJSONObject("terms").getJSONArray("term"))
                 calendar.remove("terms")
+                for (item in calendar.getJSONArray("term")) {
+                    (item as JSONObject).remove("id")
+                }
                 call.respondText(jsonObj.toString(4).replace("ns2:calendarYear", "calendarYear")
                     .replace("term", "terms"))
             } catch (e: Exception) {
@@ -67,10 +71,16 @@ fun Application.viewCourse() {
                 jsonObj.put("term", jsonObj.remove("ns2:term"))
                 val term = jsonObj.getJSONObject("term")
                 term.remove("xmlns:ns2")
+                term.remove("parents")
                 term.remove("id")
                 term.put("subject", term.getJSONObject("subjects").getJSONArray("subject"))
                 term.remove("subjects")
-                call.respondText(jsonObj.toString(4).replace("ns2:term", "term").replace("subject", "subjects"))
+                for (item in term.getJSONArray("subject")) {
+                    (item as JSONObject).put("subjectName", item.remove("content"))
+                    item.put("code", item.remove("id"))
+                }
+                term.put("subjects", term.remove("subject"))
+                call.respondText(jsonObj.toString(4))
             } catch (e: Exception) {
                 call.respondText("Invalid Request!  Input a valid year and term.")
             }
@@ -90,9 +100,26 @@ fun Application.viewCourse() {
             subject.remove("xmlns:ns2")
             subject.remove("addressLine1")
             subject.remove("addressLine2")
-            subject.put("course", subject.getJSONObject("courses").getJSONArray("course"))
+            subject.remove("contactTitle")
+            subject.remove("collegeDepartmentDescription")
+            subject.put("subjectId", subject.remove("id"))
+            subject.put("term", subject.getJSONObject("parents").getJSONObject("term").get("content"))
+            subject.remove("parents")
+            subject.put("course", subject.getJSONObject("courses").get("course"))
             subject.remove("courses")
-            call.respondText(jsonObj.toString(4).replace("course", "courses"))
+            if (subject.toString().contains("\"course\":{")) {
+                val course = subject.get("course")
+                subject.put("courses", JSONArray().put(course))
+                subject.remove("course")
+            } else {
+                subject.put("courses", subject.remove("course"))
+            }
+
+            for (course in subject.getJSONArray("courses")) {
+                (course as JSONObject).put("courseTitle", course.remove("content"))
+                course.put("courseId", course.remove("id"))
+            }
+            call.respondText(jsonObj.toString(4))
 
         }
 
