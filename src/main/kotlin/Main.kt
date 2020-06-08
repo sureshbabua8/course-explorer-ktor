@@ -47,14 +47,15 @@ fun Application.viewCourse() {
         }
         get("/{year}") {
             try {
-                xml = client.get<String>("https://courses.illinois.edu/cisapp/explorer/schedule/2020.xml")
+                xml = client.get("https://courses.illinois.edu/cisapp/explorer/schedule/" + call.parameters["year"] + ".xml")
                 var jsonObj: JSONObject = XML.toJSONObject(xml)
                 var calendar = jsonObj.getJSONObject("ns2:calendarYear")
                 calendar.remove("label")
                 calendar.remove("xmlns:ns2")
                 calendar.put("term", calendar.getJSONObject("terms").getJSONArray("term"))
                 calendar.remove("terms")
-                call.respondText(jsonObj.toString(4).replace("ns2:calendarYear", "calendarYear"))
+                call.respondText(jsonObj.toString(4).replace("ns2:calendarYear", "calendarYear")
+                    .replace("term", "terms"))
             } catch (e: Exception) {
                 call.respondText("Invalid Request!  Input a valid year.")
             }
@@ -63,9 +64,13 @@ fun Application.viewCourse() {
             try {
                 xml = client.get("https://courses.illinois.edu/cisapp/explorer/schedule/" +
                         call.parameters["year"] + "/" + call.parameters["term"] + ".xml")
-                val xmlJSONObj: JSONObject = XML.toJSONObject(xml)
-                call.respondText(xmlJSONObj.toString(4))
-
+                var jsonObj: JSONObject = XML.toJSONObject(xml)
+                var term = jsonObj.getJSONObject("ns2:term")
+                term.remove("xmlns:ns2")
+                term.remove("id")
+                term.put("subject", term.getJSONObject("subjects").getJSONArray("subject"))
+                term.remove("subjects")
+                call.respondText(jsonObj.toString(4).replace("ns2:term", "term").replace("subject", "subjects"))
             } catch (e: Exception) {
                 call.respondText("Invalid Request!  Input a valid year and term.")
             }
