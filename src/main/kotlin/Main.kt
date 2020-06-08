@@ -2,11 +2,8 @@ package hello
 
 import com.fasterxml.jackson.core.util.DefaultIndenter
 import com.fasterxml.jackson.core.util.DefaultPrettyPrinter
-import com.fasterxml.jackson.databind.JsonDeserializer
 //import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.SerializationFeature
-import com.google.gson.JsonArray
-import com.google.gson.JsonObject
 //import com.fasterxml.jackson.dataformat.xml.XmlMapper
 //import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import io.ktor.application.Application
@@ -48,8 +45,8 @@ fun Application.viewCourse() {
         get("/{year}") {
             try {
                 xml = client.get("https://courses.illinois.edu/cisapp/explorer/schedule/" + call.parameters["year"] + ".xml")
-                var jsonObj: JSONObject = XML.toJSONObject(xml)
-                var calendar = jsonObj.getJSONObject("ns2:calendarYear")
+                val jsonObj: JSONObject = XML.toJSONObject(xml)
+                val calendar = jsonObj.getJSONObject("ns2:calendarYear")
                 calendar.remove("label")
                 calendar.remove("xmlns:ns2")
                 calendar.put("term", calendar.getJSONObject("terms").getJSONArray("term"))
@@ -64,8 +61,8 @@ fun Application.viewCourse() {
             try {
                 xml = client.get("https://courses.illinois.edu/cisapp/explorer/schedule/" +
                         call.parameters["year"] + "/" + call.parameters["term"] + ".xml")
-                var jsonObj: JSONObject = XML.toJSONObject(xml)
-                var term = jsonObj.getJSONObject("ns2:term")
+                val jsonObj: JSONObject = XML.toJSONObject(xml)
+                val term = jsonObj.getJSONObject("ns2:term")
                 term.remove("xmlns:ns2")
                 term.remove("id")
                 term.put("subject", term.getJSONObject("subjects").getJSONArray("subject"))
@@ -79,8 +76,19 @@ fun Application.viewCourse() {
         get("/{year}/{term}/{course}") {
             xml = client.get<String>("https://courses.illinois.edu/cisapp/explorer/schedule/" +
                     call.parameters["year"] + "/" + call.parameters["term"] + "/" + call.parameters["course"] + ".xml")
-            val xmlJSONObj: JSONObject = XML.toJSONObject(xml)
-            call.respondText(xmlJSONObj.toString(4))
+            val jsonObj: JSONObject = XML.toJSONObject(xml)
+            var subject = jsonObj.getJSONObject("ns2:subject")
+            subject.remove("label")
+            subject.remove("contactName")
+            subject.remove("departmentCode")
+            subject.remove("collegeCode")
+            subject.remove("phoneNumber")
+            subject.remove("xmlns:ns2")
+            subject.remove("addressLine1")
+            subject.remove("addressLine2")
+            subject.put("course", subject.getJSONObject("courses").getJSONArray("course"))
+            subject.remove("courses")
+            call.respondText(jsonObj.toString(4).replace("ns2:subject", "subject").replace("course", "courses"))
 
         }
 
@@ -88,9 +96,24 @@ fun Application.viewCourse() {
             xml = client.get<String>("https://courses.illinois.edu/cisapp/explorer/schedule/" +
                     call.parameters["year"] + "/" + call.parameters["term"] + "/" + call.parameters["course"] + "/" +
                     call.parameters["code"] + ".xml")
-            val xmlJSONObj: JSONObject = XML.toJSONObject(xml)
-            println(xmlJSONObj)
-            call.respondText(xmlJSONObj.toString(4))
+            val jsonObj: JSONObject = XML.toJSONObject(xml)
+            val course = jsonObj.getJSONObject("ns2:course")
+            course.remove("xmlns:ns2")
+            course.remove("href")
+            val genEd = course.getJSONObject("genEdCategories").get("category")
+            if (genEd.toString().startsWith("{\"description")) {
+                course.put("genEd", JSONArray().put(genEd))
+            } else {
+                course.put("genEd", genEd)
+            }
+            course.remove("genEdCategories")
+            for (req in course.getJSONArray("genEd")) {
+
+            }
+            call.respondText(jsonObj.toString(4))
+
+        }
+        get("/{year}/{term}/{course}/{code}/{section}") {
 
         }
     }
