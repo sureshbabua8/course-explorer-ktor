@@ -24,6 +24,7 @@ dependencies {
     implementation("com.fasterxml.jackson.core:jackson-databind:2.11.0")
     implementation("io.ktor:ktor-jackson:$ktorVersion")
     implementation("com.fasterxml.jackson.module:jackson-module-jaxb-annotations:2.11.0")
+    implementation("org.json:json:20200518")
 
     testImplementation("io.kotlintest:kotlintest-runner-junit5:3.3.0")
     testImplementation("org.junit.jupiter:junit-jupiter:5.6.2")
