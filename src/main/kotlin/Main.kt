@@ -147,13 +147,26 @@ fun Application.viewCourse() {
                 }
             }
             // reconfig course sections JSON data
-            course.put("section", course.getJSONObject("sections").getJSONArray("section"))
+            course.put("section", course.getJSONObject("sections").get("section"))
             course.remove("sections")
+            if (course.toString().contains("\"section\":{")) {
+                val section = course.get("section")
+                course.put("sections", JSONArray().put(section))
+                course.remove("section")
+            } else {
+                course.put("sections", course.remove("section"))
+            }
+
+            for (section in course.getJSONArray("sections")) {
+                (section as JSONObject).put("crn", section.remove("id"))
+                section.put("name", section.remove("content"))
+            }
+
             course.put("courseTitle", course.remove("label"))
             course.put("courseId", course.remove("id"))
             course.put("term", course.getJSONObject("parents").getJSONObject("term").get("content"))
             course.remove("parents")
-            call.respondText(jsonObj.toString(4).replace("section", "sections"))
+            call.respondText(jsonObj.toString(4))
 
         }
         get("/{year}/{term}/{course}/{code}/{section}") {
@@ -170,21 +183,29 @@ fun Application.viewCourse() {
             section.put("crn", section.remove("id"))
             section.put("meeting", section.getJSONObject("meetings").getJSONObject("meeting"))
             section.remove("meetings")
-            section.put("year", section.getJSONObject("parents").getJSONObject("calendarYear").get("content"))
-            section.put("term", section.getJSONObject("parents").getJSONObject("term").get("content"))
             section.put("course", section.getJSONObject("parents").getJSONObject("subject").get("id"))
             section.put("department", section.getJSONObject("parents").getJSONObject("subject").get("content"))
             section.put("courseTitle", section.getJSONObject("parents").getJSONObject("course").get("content"))
             section.remove("parents")
 
             val meeting = section.getJSONObject("meeting")
+            meeting.remove("id")
             meeting.put("instructor", meeting.getJSONObject("instructors").get("instructor"))
             meeting.remove("instructors")
             if (meeting.toString().contains("\"instructor\":{")) {
                 val instructor = meeting.get("instructor")
                 meeting.put("instructors", JSONArray().put(instructor))
                 meeting.remove("instructor")
+            } else {
+                meeting.put("instructors", meeting.remove("instructor"))
             }
+
+            val array = JSONArray()
+            for (instructor in meeting.getJSONArray("instructors")) {
+                array.put((instructor as JSONObject).get("content"))
+            }
+            meeting.put("instructors", array)
+            meeting.getJSONObject("type").put("name", meeting.getJSONObject("type").remove("content"))
             call.respondText(jsonObj.toString(4))
         }
     }

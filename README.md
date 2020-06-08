@@ -1,6 +1,6 @@
 # UIUC CIS API Wrapper
 
-Based on [UIUC's Course Explorer API](https://courses.illinois.edu/cisdocs/) that returns `JSON` responses as opposed to `XML` responses.
+Databinds XML responses by [UIUC's Course Explorer API](https://courses.illinois.edu/cisdocs/) into usable `JSON` bodies.
 
 ## API Documentation
 
@@ -93,5 +93,60 @@ This returns a list of all courses in the given subject code and some basic attr
     "subjectId": "ZULU",
     "term": "Fall 2020",
     "subjectComment": "Subjects associated with this department include: Arabic (ARAB), Bamana (BMNA), English as an International Language (EIL), English as a Second Language (ESL), Modern Greek (GRKM), Hindi (HNDI), Lingala (LGLA), Linguistics (LING), Persian (PERS), Sanskrit (SNSK), Swahili (SWAH), Turkish (TURK), Wolof (WLOF), and Zulu (ZULU)."
+}}
+```
+
+### By Course
+
+ex. `2020/fall/ZULU/202`
+
+This request returns a description of the course, as well as all of its sections.
+
+```json
+{"course": {
+    "creditHours": "5 hours.",
+    "courseTitle": "Elementary Zulu II",
+    "courseSectionInformation": "Same as AFST 252. Participation in the language laboratory is required. Prerequisite: ZULU 201.",
+    "description": "Continuation of ZULU 201 with introduction of more advanced grammar; emphasis on more fluency in speaking, reading, and writing simple sentences in standard Zulu. Same as AFST 252. Participation in the language laboratory is required. Prerequisite: ZULU 201.",
+    "term": "Fall 2020",
+    "courseId": "ZULU 202",
+    "sections": [{
+        "name": "A",
+        "href": "https://courses.illinois.edu/cisapp/explorer/schedule/2020/fall/ZULU/202/71955.xml",
+        "crn": 71955
+    }]
+}}
+```
+
+### By Section
+
+ex. `2020/fall/ZULU/202/71955`
+
+**Please note that the endpoint is the section's CRN.** This request returns a section's enrollment information, 
+start/end times, location, etc.
+
+```json
+{"section": {
+    "courseTitle": "Elementary Zulu II",
+    "sectionStatusCode": "A",
+    "endDate": "2020-12-09Z",
+    "enrollmentStatus": "Open",
+    "sectionNumber": "A",
+    "course": "ZULU",
+    "partOfTerm": 1,
+    "department": "Zulu",
+    "meeting": {
+        "start": "ARRANGED",
+        "type": {
+            "code": "LCD",
+            "name": "Lecture-Discussion"
+        },
+        "instructors": [
+            "Gathogo, M",
+            "Saadah, E"
+        ]
+    },
+    "startDate": "2020-08-24Z",
+    "crn": 71955
 }}
 ```
