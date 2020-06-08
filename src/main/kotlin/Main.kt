@@ -24,6 +24,11 @@ import io.ktor.server.netty.Netty
 
 val client = HttpClient(CIO)
 fun Application.viewCourse() {
+    var xml = ""
+    var xmlMapper: ObjectMapper = XmlMapper().registerKotlinModule()
+    val objectMapper = ObjectMapper()
+
+
     install(ContentNegotiation) {
         jackson {
             configure(SerializationFeature.INDENT_OUTPUT, true)
@@ -40,29 +45,31 @@ fun Application.viewCourse() {
         }
         get("/{year}") {
             try {
-                var xml: String = client.get<String>("https://courses.illinois.edu/cisapp/explorer/schedule/"+call.parameters["year"] + ".xml")
-                xml = xml.replace(".xml\">", ".xml\"><label>")
-                xml = xml.replace("</term>", "</label></term>")
-                val xmlMapper: ObjectMapper = XmlMapper().registerKotlinModule()
-                val value: calendarYear = xmlMapper.readValue(xml, calendarYear::class.java)
-                val objectMapper = ObjectMapper()
+                xml = client.get<String>("https://courses.illinois.edu/cisapp/explorer/schedule/" +
+                        call.parameters["year"] + ".xml").replace(".xml\">", ".xml\"><label>")
+                    .replace("</term>", "</label></term>")
+                val value: Year = xmlMapper.readValue(xml, Year::class.java)
                 call.respondText(objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(value))
             } catch (e: Exception) {
-                call.respondText("Ope!")
+                call.respondText("Invalid Request!  Input a valid year.")
             }
         }
         get("/{year}/{term}/") {
-            call.respondText("will update later")
+            try {
+                xml = client.get<String>("https://courses.illinois.edu/cisapp/explorer/schedule/" +
+                        call.parameters["year"] + "/" + call.parameters["term"] + ".xml")
+                    .replace(".xml\">", ".xml\"><label>")
+                    .replace("</subject>", "</label></subject>")
+                    .replace("</calendarYear>", "</label></calendarYear>")
+                println(xml)
+                val value: Term = xmlMapper.readValue(xml, Term::class.java)
+                call.respondText(objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(value))
+            } catch (e: Exception) {
+                call.respondText("Invalid Request!  Input a valid year and term.")
+            }
         }
     }
 }
- suspend fun main() {
-     var xml: String = client.get<String>("https://courses.illinois.edu/cisapp/explorer/schedule/2020.xml")
-     xml = xml.replace(".xml\">", ".xml\"><label>")
-     xml = xml.replace("</term>", "</label></term>")
-     val xmlMapper: ObjectMapper = XmlMapper().registerKotlinModule()
-     val value: calendarYear = xmlMapper.readValue(xml, calendarYear::class.java)
-     val objectMapper = ObjectMapper()
-     println(objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(value))
-    embeddedServer(Netty, port = 8000, module = Application::viewCourse).start(wait = true)
+ fun main() {
+     embeddedServer(Netty, port = 8000, module = Application::viewCourse).start(wait = true)
 }
