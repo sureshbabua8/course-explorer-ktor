@@ -11,6 +11,7 @@ import io.ktor.application.call
 import io.ktor.application.install
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.cio.CIO
+import io.ktor.client.features.ClientRequestException
 import io.ktor.client.request.get
 import io.ktor.features.ContentNegotiation
 import io.ktor.jackson.jackson
@@ -97,27 +98,27 @@ fun Application.viewCourse() {
 
         get("/{year}/{term}/{course}/{code}") {
             xml = client.get<String>("https://courses.illinois.edu/cisapp/explorer/schedule/" +
-                    call.parameters["year"] + "/" + call.parameters["term"] + "/" + call.parameters["course"] + "/" +
-                    call.parameters["code"] + ".xml")
+                    call.parameters["year"] + "/" + call.parameters["term"] + "/" + call.parameters["course"] + "/" + call.parameters["code"] + ".xml")
             val jsonObj: JSONObject = XML.toJSONObject(xml)
             jsonObj.put("course", jsonObj.remove("ns2:course"))
             val course = jsonObj.getJSONObject("course")
             course.remove("xmlns:ns2")
             course.remove("href")
-            val genEd = course.getJSONObject("genEdCategories").get("category")
-            if (genEd.toString().startsWith("{\"description")) {
-                course.put("genEd", JSONArray().put(genEd))
-            } else {
-                course.put("genEd", genEd)
+            if (course.has("genEdCategories")) {
+                val genEd = course.getJSONObject("genEdCategories").get("category")
+                if (genEd.toString().startsWith("{\"description")) {
+                    course.put("genEd", JSONArray().put(genEd))
+                } else {
+                    course.put("genEd", genEd)
+                }
+                course.remove("genEdCategories")
+                for (courseElem in course.getJSONArray("genEd")) {
+                    val req = courseElem as JSONObject
+                    req.put("description", req.getJSONObject("ns2:genEdAttributes").getJSONObject("genEdAttribute").get("content"))
+                    req.put("id", req.getJSONObject("ns2:genEdAttributes").getJSONObject("genEdAttribute").get("code"))
+                    req.remove("ns2:genEdAttributes")
+                }
             }
-            course.remove("genEdCategories")
-            for (courseElem in course.getJSONArray("genEd")) {
-                val req = courseElem as JSONObject
-                req.put("description", req.getJSONObject("ns2:genEdAttributes").getJSONObject("genEdAttribute").get("content"))
-                req.put("id", req.getJSONObject("ns2:genEdAttributes").getJSONObject("genEdAttribute").get("code"))
-                req.remove("ns2:genEdAttributes")
-            }
-
             // reconfig course sections JSON data
             course.put("section", course.getJSONObject("sections").getJSONArray("section"))
             course.remove("sections")
@@ -129,10 +130,39 @@ fun Application.viewCourse() {
 
         }
         get("/{year}/{term}/{course}/{code}/{section}") {
+            xml = client.get<String>("https://courses.illinois.edu/cisapp/explorer/schedule/" +
+                    call.parameters["year"] + "/" + call.parameters["term"] + "/" + call.parameters["course"] + "/" +
+                    call.parameters["code"] + "/" + call.parameters["section"] + ".xml")
 
+            val jsonObj: JSONObject = XML.toJSONObject(xml)
+            jsonObj.put("section", jsonObj.remove("ns2:section"))
+            val section = jsonObj.getJSONObject("section")
+            section.remove("xmlns:ns2")
+            section.remove("href")
+            section.remove("statusCode")
+            section.put("crn", section.remove("id"))
+            section.put("meeting", section.getJSONObject("meetings").getJSONObject("meeting"))
+            section.remove("meetings")
+            section.put("year", section.getJSONObject("parents").getJSONObject("calendarYear").get("content"))
+            section.put("term", section.getJSONObject("parents").getJSONObject("term").get("content"))
+            section.put("course", section.getJSONObject("parents").getJSONObject("subject").get("id"))
+            section.put("department", section.getJSONObject("parents").getJSONObject("subject").get("content"))
+            section.put("courseTitle", section.getJSONObject("parents").getJSONObject("course").get("content"))
+            section.remove("parents")
+
+            val meeting = section.getJSONObject("meeting")
+            meeting.put("instructor", meeting.getJSONObject("instructors").get("instructor"))
+            meeting.remove("instructors")
+            if (meeting.toString().contains("\"instructor\":{")) {
+                val instructor = meeting.get("instructor")
+                meeting.put("instructors", JSONArray().put(instructor))
+                meeting.remove("instructor")
+            }
+            call.respondText(jsonObj.toString(4))
         }
     }
 }
  suspend fun main() {
+//     var xml = client.get<String>("https://courses.illinois.edu/cisapp/explorer/schedule/2020/fall/CS/125/66448.xml")
      embeddedServer(Netty, port = 8000, module = Application::viewCourse).start(wait = true)
  }
