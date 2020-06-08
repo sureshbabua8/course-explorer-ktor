@@ -2,8 +2,11 @@ package hello
 
 import com.fasterxml.jackson.core.util.DefaultIndenter
 import com.fasterxml.jackson.core.util.DefaultPrettyPrinter
+import com.fasterxml.jackson.databind.JsonDeserializer
 //import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.SerializationFeature
+import com.google.gson.JsonArray
+import com.google.gson.JsonObject
 //import com.fasterxml.jackson.dataformat.xml.XmlMapper
 //import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import io.ktor.application.Application
@@ -14,12 +17,12 @@ import io.ktor.client.engine.cio.CIO
 import io.ktor.client.request.get
 import io.ktor.features.ContentNegotiation
 import io.ktor.jackson.jackson
-import io.ktor.response.respond
 import io.ktor.response.respondText
 import io.ktor.routing.get
 import io.ktor.routing.routing
 import io.ktor.server.engine.embeddedServer
 import io.ktor.server.netty.Netty
+import org.json.JSONArray
 import org.json.JSONObject
 import org.json.XML
 
@@ -44,17 +47,21 @@ fun Application.viewCourse() {
         }
         get("/{year}") {
             try {
-                xml = client.get<String>("https://courses.illinois.edu/cisapp/explorer/schedule/" +
-                        call.parameters["year"] + ".xml")
-                val xmlJSONObj: JSONObject = XML.toJSONObject(xml)
-                call.respondText(xmlJSONObj.toString(4))
+                xml = client.get<String>("https://courses.illinois.edu/cisapp/explorer/schedule/2020.xml")
+                var jsonObj: JSONObject = XML.toJSONObject(xml)
+                var calendar = jsonObj.getJSONObject("ns2:calendarYear")
+                calendar.remove("label")
+                calendar.remove("xmlns:ns2")
+                calendar.put("term", calendar.getJSONObject("terms").getJSONArray("term"))
+                calendar.remove("terms")
+                call.respondText(jsonObj.toString(4).replace("ns2:calendarYear", "calendarYear"))
             } catch (e: Exception) {
                 call.respondText("Invalid Request!  Input a valid year.")
             }
         }
         get("/{year}/{term}/") {
             try {
-                xml = client.get<String>("https://courses.illinois.edu/cisapp/explorer/schedule/" +
+                xml = client.get("https://courses.illinois.edu/cisapp/explorer/schedule/" +
                         call.parameters["year"] + "/" + call.parameters["term"] + ".xml")
                 val xmlJSONObj: JSONObject = XML.toJSONObject(xml)
                 call.respondText(xmlJSONObj.toString(4))
@@ -80,11 +87,9 @@ fun Application.viewCourse() {
             println(xmlJSONObj)
             call.respondText(xmlJSONObj.toString(4))
 
-
-
         }
     }
 }
- fun main() {
+ suspend fun main() {
      embeddedServer(Netty, port = 8000, module = Application::viewCourse).start(wait = true)
  }

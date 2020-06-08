@@ -19,6 +19,7 @@ dependencies {
     implementation("io.ktor:ktor-client-cio:$ktorVersion")
     implementation("io.ktor:ktor-server-netty:$ktorVersion")
     implementation("io.ktor:ktor-gson:$ktorVersion")
+    implementation("com.google.code.gson:gson:2.8.6")
 //    implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-xml:2.11.0")
 //    implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.11.0")
 //    implementation("com.fasterxml.jackson.core:jackson-databind:2.11.0")
