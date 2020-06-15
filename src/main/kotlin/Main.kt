@@ -15,6 +15,7 @@ import io.ktor.client.features.ClientRequestException
 import io.ktor.client.request.get
 import io.ktor.features.ContentNegotiation
 import io.ktor.jackson.jackson
+import io.ktor.response.respond
 import io.ktor.response.respondText
 import io.ktor.routing.get
 import io.ktor.routing.routing
@@ -46,19 +47,7 @@ fun Application.viewCourse() {
         get("/{year}") {
             try {
                 xml = client.get("https://courses.illinois.edu/cisapp/explorer/schedule/" + call.parameters["year"] + ".xml")
-                val jsonObj: JSONObject = XML.toJSONObject(xml)
-                jsonObj.put("calendarYear", jsonObj.remove("ns2:calendarYear"))
-                val calendar = jsonObj.getJSONObject("calendarYear")
-                calendar.remove("label")
-                calendar.remove("xmlns:ns2")
-                calendar.put("year", calendar.remove("id"))
-                calendar.put("term", calendar.getJSONObject("terms").getJSONArray("term"))
-                calendar.remove("terms")
-                for (item in calendar.getJSONArray("term")) {
-                    (item as JSONObject).remove("id")
-                }
-                call.respondText(jsonObj.toString(4).replace("ns2:calendarYear", "calendarYear")
-                    .replace("term", "terms"))
+                call.respond(xml.fromXml<ScheduleYear>())
             } catch (e: Exception) {
                 call.respondText("Invalid Request!  Input a valid year.")
             }
