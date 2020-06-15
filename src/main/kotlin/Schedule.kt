@@ -26,8 +26,8 @@ data class CalendarYears(val label: String, val calendarYears: List<CalendarYear
 
 data class ScheduleYear(val label: String, val terms: List<Term>) {
     data class Term(
-        @JsonIgnore @JacksonXmlProperty val id: String,
-        @JsonIgnore @JacksonXmlProperty val href: URI,
+        @JsonIgnore @JacksonXmlProperty(localName = "id") val id: String,
+        @JacksonXmlProperty val href: URI,
         @JacksonXmlProperty(localName = "innerText") val semester: String
     )
 }
