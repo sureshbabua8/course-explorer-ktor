@@ -1,4 +1,5 @@
 # UIUC CIS API Wrapper
+**NEEDS TO BE UPDATED**
 
 Databinds XML responses by [UIUC's Course Explorer API](https://courses.illinois.edu/cisdocs/) into usable `JSON` bodies.
 

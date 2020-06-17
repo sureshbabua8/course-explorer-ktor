@@ -21,9 +21,9 @@ import io.ktor.routing.get
 import io.ktor.routing.routing
 import io.ktor.server.engine.embeddedServer
 import io.ktor.server.netty.Netty
-import org.json.JSONArray
-import org.json.JSONObject
-import org.json.XML
+import java.io.File
+
+//private fun String.load() = Schedule::class.java.getResource("/$this").readText()
 
 val client = HttpClient(CIO)
 fun Application.viewCourse() {
@@ -42,7 +42,7 @@ fun Application.viewCourse() {
 
     routing {
         get("/") {
-            call.respondText("Welcome to UIUC!")
+            call.respond(File("schedule.xml").readText().fromXml<CalendarYears>())
         }
         get("/{year}") {
             try {
@@ -63,24 +63,43 @@ fun Application.viewCourse() {
         }
 
         get("/{year}/{term}/{course}") {
-            xml = client.get<String>("https://courses.illinois.edu/cisapp/explorer/schedule/" +
-                    call.parameters["year"] + "/" + call.parameters["term"] + "/" + call.parameters["course"] + ".xml")
-            call.respond(xml.fromXml<Department>())
+            try {
+                xml = client.get<String>("https://courses.illinois.edu/cisapp/explorer/schedule/" +
+                        call.parameters["year"] + "/" + call.parameters["term"] + "/" + call.parameters["course"] + ".xml")
+                call.respond(xml.fromXml<Department>())
+            } catch (e: Exception) {
+                call.respondText("Invalid Request!  Input a valid year, term, and subject code.")
+            }
+
         }
 
         get("/{year}/{term}/{course}/{code}") {
-            xml = client.get<String>("https://courses.illinois.edu/cisapp/explorer/schedule/" +
-                    call.parameters["year"] + "/" + call.parameters["term"] + "/" + call.parameters["course"] + "/" + call.parameters["code"] + ".xml")
-            call.respond(xml.fromXml<SubjectCourse>())
+            try {
+                xml = client.get<String>("https://courses.illinois.edu/cisapp/explorer/schedule/" +
+                        call.parameters["year"] + "/" + call.parameters["term"] + "/" + call.parameters["course"] + "/" + call.parameters["code"] + ".xml")
+                call.respond(xml.fromXml<SubjectCourse>())
+            } catch (e: Exception) {
+                call.respondText("Invalid Request!  Input a valid year, term, subject, and course code.")
+            }
         }
         get("/{year}/{term}/{course}/{code}/{section}") {
-            xml = client.get<String>("https://courses.illinois.edu/cisapp/explorer/schedule/" +
-                    call.parameters["year"] + "/" + call.parameters["term"] + "/" + call.parameters["course"] + "/" +
-                    call.parameters["code"] + "/" + call.parameters["section"] + ".xml")
-            call.respond(xml.fromXml<Section>())
+            try {
+                xml = client.get<String>("https://courses.illinois.edu/cisapp/explorer/schedule/" +
+                        call.parameters["year"] + "/" + call.parameters["term"] + "/" + call.parameters["course"] + "/" +
+                        call.parameters["code"] + "/" + call.parameters["section"] + ".xml")
+                call.respond(xml.fromXml<Section>())
+            } catch (e: Exception) {
+                call.respondText("Invalid Request!  Input a valid year, term, subject, course code, " +
+                        "and CRN for the specific section.")
+            }
         }
     }
 }
- fun main() {
-     embeddedServer(Netty, port = 8000, module = Application::viewCourse).start(wait = true)
+
+ suspend fun main() {
+     val path = "https://courses.illinois.edu/cisapp/explorer/schedule.xml"
+     val fileContent: String = client.get(path)
+     val file = File("schedule.xml")
+     file.writeText(fileContent)
+     embeddedServer(Netty, port = 8080, module = Application::viewCourse).start(wait = true)
  }
