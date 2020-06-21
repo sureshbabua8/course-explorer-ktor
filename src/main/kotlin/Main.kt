@@ -2,19 +2,16 @@ package hello
 
 import com.fasterxml.jackson.core.util.DefaultIndenter
 import com.fasterxml.jackson.core.util.DefaultPrettyPrinter
-//import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.SerializationFeature
-//import com.fasterxml.jackson.dataformat.xml.XmlMapper
-//import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import io.ktor.application.Application
 import io.ktor.application.call
 import io.ktor.application.install
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.cio.CIO
-import io.ktor.client.features.ClientRequestException
 import io.ktor.client.request.get
 import io.ktor.features.ContentNegotiation
 import io.ktor.jackson.jackson
+import io.ktor.request.uri
 import io.ktor.response.respond
 import io.ktor.response.respondText
 import io.ktor.routing.get
@@ -22,13 +19,14 @@ import io.ktor.routing.routing
 import io.ktor.server.engine.embeddedServer
 import io.ktor.server.netty.Netty
 import java.io.File
+import io.ktor.server.engine.commandLineEnvironment
+import java.lang.Exception
+import java.util.*
 
-//private fun String.load() = Schedule::class.java.getResource("/$this").readText()
-
-val client = HttpClient(CIO)
-fun Application.viewCourse() {
-    var xml = ""
-
+fun Application.run() {
+    val client = HttpClient(CIO)
+    val request = Request()
+    val resDir: String = "src/main/resources/schedule"
 
     install(ContentNegotiation) {
         jackson {
@@ -42,64 +40,93 @@ fun Application.viewCourse() {
 
     routing {
         get("/") {
-            call.respond(File("schedule.xml").readText().fromXml<CalendarYears>())
+            val path: String = resDir + call.request.uri.trim('/')
+            val xmlString: String
+            val file: File = File("$path.xml")
+            if (file.exists()) {
+                xmlString = file.readText()
+            } else {
+                xmlString = client.get("https://courses.illinois.edu/cisapp/explorer/schedule.xml")
+                File("$path.xml").writeText(xmlString)
+            }
+
+            call.respond(xmlString.fromXml<CalendarYears>())
         }
         get("/{year}") {
-            try {
-                xml = client.get("https://courses.illinois.edu/cisapp/explorer/schedule/" + call.parameters["year"] + ".xml")
-                call.respond(xml.fromXml<ScheduleYear>())
-            } catch (e: Exception) {
-                call.respondText("Invalid Request!  Input a valid year.")
+            val uri: String = call.request.uri
+            val path: String = resDir + call.request.uri
+            val xmlString: String
+            println("$path.xml")
+            val file: File = File("$path.xml")
+            if (file.exists()) {
+                xmlString = file.readText()
+            } else {
+                println("https://courses.illinois.edu/cisapp/explorer/schedule$uri.xml")
+                xmlString = client.get("https://courses.illinois.edu/cisapp/explorer/schedule$uri.xml")
+                println(xmlString)
+                File("$path.xml").writeText(xmlString)
+                println("file:" + File("$path.xml").readText())
             }
+
+            call.respond(xmlString.fromXml<ScheduleYear>())
+
         }
         get("/{year}/{term}/") {
-            try {
-                xml = client.get("https://courses.illinois.edu/cisapp/explorer/schedule/" +
-                        call.parameters["year"] + "/" + call.parameters["term"] + ".xml")
-                call.respond(xml.fromXml<Term>())
-            } catch (e: Exception) {
-                call.respondText("Invalid Request!  Input a valid year and term.")
+            val path: String = resDir + call.request.uri
+            val xmlString: String
+            val file: File = File("$path.xml")
+            if (file.exists()) {
+                xmlString = file.readText()
+            } else {
+                xmlString = client.get("https://courses.illinois.edu/cisapp/explorer/schedule.xml")
+                File("$path.xml").writeText(xmlString)
             }
+
+            call.respond("")
+
         }
 
         get("/{year}/{term}/{course}") {
-            try {
-                xml = client.get<String>("https://courses.illinois.edu/cisapp/explorer/schedule/" +
-                        call.parameters["year"] + "/" + call.parameters["term"] + "/" + call.parameters["course"] + ".xml")
-                call.respond(xml.fromXml<Department>())
-            } catch (e: Exception) {
-                call.respondText("Invalid Request!  Input a valid year, term, and subject code.")
+            val path: String = resDir + call.request.uri
+            val xmlString: String
+            val file: File = File("src/main/resources/schedule.xml")
+            if (file.exists()) {
+                xmlString = file.readText()
+            } else {
+                xmlString = client.get("https://courses.illinois.edu/cisapp/explorer/schedule.xml")
+                File("src/main/resources/schedule.xml").writeText(xmlString)
             }
+
 
         }
 
         get("/{year}/{term}/{course}/{code}") {
-            try {
-                xml = client.get<String>("https://courses.illinois.edu/cisapp/explorer/schedule/" +
-                        call.parameters["year"] + "/" + call.parameters["term"] + "/" + call.parameters["course"] + "/" + call.parameters["code"] + ".xml")
-                call.respond(xml.fromXml<SubjectCourse>())
-            } catch (e: Exception) {
-                call.respondText("Invalid Request!  Input a valid year, term, subject, and course code.")
+            val path: String = resDir + call.request.uri
+            val xmlString: String
+            val file: File = File("src/main/resources/schedule.xml")
+            if (file.exists()) {
+                xmlString = file.readText()
+            } else {
+                xmlString = client.get("https://courses.illinois.edu/cisapp/explorer/schedule.xml")
+                File("src/main/resources/schedule.xml").writeText(xmlString)
             }
         }
         get("/{year}/{term}/{course}/{code}/{section}") {
-            try {
-                xml = client.get<String>("https://courses.illinois.edu/cisapp/explorer/schedule/" +
-                        call.parameters["year"] + "/" + call.parameters["term"] + "/" + call.parameters["course"] + "/" +
-                        call.parameters["code"] + "/" + call.parameters["section"] + ".xml")
-                call.respond(xml.fromXml<Section>())
-            } catch (e: Exception) {
-                call.respondText("Invalid Request!  Input a valid year, term, subject, course code, " +
-                        "and CRN for the specific section.")
+            val path: String = resDir + call.request.uri
+            val xmlString: String
+            val file: File = File("src/main/resources/schedule.xml")
+            if (file.exists()) {
+                xmlString = file.readText()
+            } else {
+                xmlString = client.get("https://courses.illinois.edu/cisapp/explorer/schedule.xml")
+                File("src/main/resources/schedule.xml").writeText(xmlString)
             }
         }
     }
 }
 
- suspend fun main() {
-     val path = "https://courses.illinois.edu/cisapp/explorer/schedule.xml"
-     val fileContent: String = client.get(path)
-     val file = File("schedule.xml")
-     file.writeText(fileContent)
-     embeddedServer(Netty, port = 8080, module = Application::viewCourse).start(wait = true)
- }
+fun main(args: Array<String>) {
+    embeddedServer(Netty, port = 8080, module = Application::run).start(wait = true)
+}
+
+
