@@ -13,15 +13,11 @@ import io.ktor.features.ContentNegotiation
 import io.ktor.jackson.jackson
 import io.ktor.request.uri
 import io.ktor.response.respond
-import io.ktor.response.respondText
 import io.ktor.routing.get
 import io.ktor.routing.routing
 import io.ktor.server.engine.embeddedServer
 import io.ktor.server.netty.Netty
 import java.io.File
-import io.ktor.server.engine.commandLineEnvironment
-import java.lang.Exception
-import java.util.*
 
 fun Application.run() {
     val client = HttpClient(CIO)
@@ -40,13 +36,14 @@ fun Application.run() {
 
     routing {
         get("/") {
-            val path: String = resDir + call.request.uri.trim('/')
+            val uri: String = call.request.uri.trim('/')
+            val path: String = resDir + call.request.uri.replace('/', '-')
             val xmlString: String
             val file: File = File("$path.xml")
             if (file.exists()) {
                 xmlString = file.readText()
             } else {
-                xmlString = client.get("https://courses.illinois.edu/cisapp/explorer/schedule.xml")
+                xmlString = client.get("https://courses.illinois.edu/cisapp/explorer/schedule$uri.xml")
                 File("$path.xml").writeText(xmlString)
             }
 
@@ -54,9 +51,9 @@ fun Application.run() {
         }
         get("/{year}") {
             val uri: String = call.request.uri
-            val path: String = resDir + call.request.uri
-            val xmlString: String
+            val path: String = resDir + call.request.uri.replace('/', '-')
             println("$path.xml")
+            val xmlString: String
             val file: File = File("$path.xml")
             if (file.exists()) {
                 xmlString = file.readText()
@@ -64,8 +61,7 @@ fun Application.run() {
                 println("https://courses.illinois.edu/cisapp/explorer/schedule$uri.xml")
                 xmlString = client.get("https://courses.illinois.edu/cisapp/explorer/schedule$uri.xml")
                 println(xmlString)
-                File("$path.xml").writeText(xmlString)
-                println("file:" + File("$path.xml").readText())
+                File("$path.xml").writeText("hello world")
             }
 
             call.respond(xmlString.fromXml<ScheduleYear>())
