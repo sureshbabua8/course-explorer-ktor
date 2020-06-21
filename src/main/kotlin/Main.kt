@@ -21,7 +21,6 @@ import java.io.File
 
 fun Application.run() {
     val client = HttpClient(CIO)
-    val request = Request()
     val resDir: String = "src/main/resources/schedule"
 
     install(ContentNegotiation) {
@@ -52,71 +51,75 @@ fun Application.run() {
         get("/{year}") {
             val uri: String = call.request.uri
             val path: String = resDir + call.request.uri.replace('/', '-')
-            println("$path.xml")
             val xmlString: String
             val file: File = File("$path.xml")
             if (file.exists()) {
                 xmlString = file.readText()
             } else {
-                println("https://courses.illinois.edu/cisapp/explorer/schedule$uri.xml")
                 xmlString = client.get("https://courses.illinois.edu/cisapp/explorer/schedule$uri.xml")
-                println(xmlString)
-                File("$path.xml").writeText("hello world")
+                File("$path.xml").writeText(xmlString)
             }
 
             call.respond(xmlString.fromXml<ScheduleYear>())
 
         }
         get("/{year}/{term}/") {
-            val path: String = resDir + call.request.uri
+            val uri: String = call.request.uri
+            val path: String = resDir + call.request.uri.replace('/', '-')
             val xmlString: String
             val file: File = File("$path.xml")
             if (file.exists()) {
                 xmlString = file.readText()
             } else {
-                xmlString = client.get("https://courses.illinois.edu/cisapp/explorer/schedule.xml")
+                xmlString = client.get("https://courses.illinois.edu/cisapp/explorer/schedule$uri.xml")
                 File("$path.xml").writeText(xmlString)
             }
 
-            call.respond("")
-
+            call.respond(xmlString.fromXml<Term>())
         }
 
         get("/{year}/{term}/{course}") {
-            val path: String = resDir + call.request.uri
+            val uri: String = call.request.uri
+            val path: String = resDir + call.request.uri.replace('/', '-')
             val xmlString: String
-            val file: File = File("src/main/resources/schedule.xml")
+            val file: File = File("$path.xml")
             if (file.exists()) {
                 xmlString = file.readText()
             } else {
-                xmlString = client.get("https://courses.illinois.edu/cisapp/explorer/schedule.xml")
-                File("src/main/resources/schedule.xml").writeText(xmlString)
+                xmlString = client.get("https://courses.illinois.edu/cisapp/explorer/schedule$uri.xml")
+                File("$path.xml").writeText(xmlString)
             }
 
-
+            call.respond(xmlString.fromXml<Department>())
         }
 
         get("/{year}/{term}/{course}/{code}") {
-            val path: String = resDir + call.request.uri
+            val uri: String = call.request.uri
+            val path: String = resDir + call.request.uri.replace('/', '-')
             val xmlString: String
-            val file: File = File("src/main/resources/schedule.xml")
+            val file: File = File("$path.xml")
             if (file.exists()) {
                 xmlString = file.readText()
             } else {
-                xmlString = client.get("https://courses.illinois.edu/cisapp/explorer/schedule.xml")
-                File("src/main/resources/schedule.xml").writeText(xmlString)
+                xmlString = client.get("https://courses.illinois.edu/cisapp/explorer/schedule$uri.xml")
+                File("$path.xml").writeText(xmlString)
             }
+
+            call.respond(xmlString.fromXml<SubjectCourse>())
         }
         get("/{year}/{term}/{course}/{code}/{section}") {
-            val path: String = resDir + call.request.uri
+            val uri: String = call.request.uri
+            val path: String = resDir + call.request.uri.replace('/', '-')
             val xmlString: String
-            val file: File = File("src/main/resources/schedule.xml")
+            val file: File = File("$path.xml")
             if (file.exists()) {
                 xmlString = file.readText()
             } else {
-                xmlString = client.get("https://courses.illinois.edu/cisapp/explorer/schedule.xml")
-                File("src/main/resources/schedule.xml").writeText(xmlString)
+                xmlString = client.get("https://courses.illinois.edu/cisapp/explorer/schedule$uri.xml")
+                File("$path.xml").writeText(xmlString)
             }
+
+            call.respond(xmlString.fromXml<Section>())
         }
     }
 }

@@ -1,4 +1,4 @@
 # TODO
+* fix remaining cache errors
+* reorganize cache to store files with dir hierarchy?
 * update README
-* create gen-ed filter requests
-* reformat JSON hierarchies so that they're simpler
