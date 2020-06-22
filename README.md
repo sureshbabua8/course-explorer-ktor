@@ -1,6 +1,4 @@
 # UIUC CIS API Wrapper
-**NEEDS TO BE UPDATED**
-
 Databinds XML responses by [UIUC's Course Explorer API](https://courses.illinois.edu/cisdocs/) into usable `JSON` bodies.
 
 ## API Documentation
@@ -14,27 +12,22 @@ ex. endpoint: `/2020`
 The `JSON` body has the following hierarchy:
 
 ```json
-{"calendarYear": {
-    "year": 2020,
-    "terms": [
-        {
-            "href": "https://courses.illinois.edu/cisapp/explorer/schedule/2020/winter.xml",
-            "content": "Winter 2020"
-        },
-        {
-            "href": "https://courses.illinois.edu/cisapp/explorer/schedule/2020/spring.xml",
-            "content": "Spring 2020"
-        },
-        {
-            "href": "https://courses.illinois.edu/cisapp/explorer/schedule/2020/summer.xml",
-            "content": "Summer 2020"
-        },
-        {
-            "href": "https://courses.illinois.edu/cisapp/explorer/schedule/2020/fall.xml",
-            "content": "Fall 2020"
-        }
-    ]
-}}
+{
+  "label" : "2020",
+  "terms" : [ {
+    "href" : "https://courses.illinois.edu/cisapp/explorer/schedule/2020/winter.xml",
+    "semester" : "Winter 2020"
+  }, {
+    "href" : "https://courses.illinois.edu/cisapp/explorer/schedule/2020/spring.xml",
+    "semester" : "Spring 2020"
+  }, {
+    "href" : "https://courses.illinois.edu/cisapp/explorer/schedule/2020/summer.xml",
+    "semester" : "Summer 2020"
+  }, {
+    "href" : "https://courses.illinois.edu/cisapp/explorer/schedule/2020/fall.xml",
+    "semester" : "Fall 2020"
+  } ]
+}
 ```
 
 ### By Term
@@ -44,8 +37,16 @@ ex. `/2020/fall`
 This request returns a given response of the different subjects instructed in a specific term.
 
 ```json
-{"term": {
-    "subjects": [
+{
+  "parents" : {
+    "calendarYear" : {
+      "id" : 2020,
+      "href" : "https://courses.illinois.edu/cisapp/explorer/schedule/2020.xml",
+      "year" : 2020
+    }
+  },
+  "label" : "Fall 2020",
+   "subjects": [
         {
             "code": "AAS",
             "href": "https://courses.illinois.edu/cisapp/explorer/schedule/2020/fall/AAS.xml",
@@ -71,9 +72,8 @@ This request returns a given response of the different subjects instructed in a 
             "href": "https://courses.illinois.edu/cisapp/explorer/schedule/2020/fall/ZULU.xml",
             "subjectName": "Zulu"
         }
-    ],
-    "label": "Fall 2020",
-}}
+    ]
+}
 ```
 
 ### By Subject
@@ -83,18 +83,35 @@ ex. `/2020/fall/ZULU`
 This returns a list of all courses in the given subject code and some basic attributes of the subject/department.
 
 ```json
-{"subject": {
-    "courses": [{
-        "courseTitle": "Elementary Zulu II",
-        "href": "https://courses.illinois.edu/cisapp/explorer/schedule/2020/fall/ZULU/202.xml",
-        "courseId": 202
-    }],
-    "unitName": "Linguistics",
-    "webSiteURL": "www.linguistics.uiuc.edu",
-    "subjectId": "ZULU",
-    "term": "Fall 2020",
-    "subjectComment": "Subjects associated with this department include: Arabic (ARAB), Bamana (BMNA), English as an International Language (EIL), English as a Second Language (ESL), Modern Greek (GRKM), Hindi (HNDI), Lingala (LGLA), Linguistics (LING), Persian (PERS), Sanskrit (SNSK), Swahili (SWAH), Turkish (TURK), Wolof (WLOF), and Zulu (ZULU)."
-}}
+{
+  "parents" : {
+    "calendarYear" : {
+      "id" : 2020,
+      "href" : "https://courses.illinois.edu/cisapp/explorer/schedule/2020.xml",
+      "year" : 2020
+    },
+    "term" : {
+      "href" : "https://courses.illinois.edu/cisapp/explorer/schedule/2020/fall.xml",
+      "semester" : "Fall 2020"
+    }
+  },
+  "label" : "Zulu",
+  "collegeCode" : "KV",
+  "departmentCode" : 1864,
+  "unitName" : "Linguistics",
+  "contactName" : "James Yoon",
+  "contactTitle" : "Department Head",
+  "addressLine1" : "Department Office",
+  "addressLine2" : "4080 Foreign Languages Building, 707 South Mathews, Urbana",
+  "phoneNumber" : "217-333-3563",
+  "webSiteURL" : "www.linguistics.uiuc.edu",
+  "collegeDepartmentDescription" : "Department Head: James Yoon\nDepartment Office, 4080 Foreign Languages Building, 707 South Mathews, Urbana, 217-333-3563\nSubjects associated with this department include: Arabic (ARAB), Bamana (BMNA), English as an International Language (EIL), English as a Second Language (ESL), Modern Greek (GRKM), Hindi (HNDI), Lingala (LGLA), Linguistics (LING), Persian (PERS), Sanskrit (SNSK), Swahili (SWAH), Turkish (TURK), Wolof (WLOF), and Zulu (ZULU).\nwww.linguistics.uiuc.edu",
+  "courses" : [ {
+    "id" : "202",
+    "href" : "https://courses.illinois.edu/cisapp/explorer/schedule/2020/fall/ZULU/202.xml",
+    "name" : "Elementary Zulu II"
+  } ]
+}
 ```
 
 ### By Course
@@ -104,19 +121,32 @@ ex. `2020/fall/ZULU/202`
 This request returns a description of the course, as well as all of its sections.
 
 ```json
-{"course": {
-    "creditHours": "5 hours.",
-    "courseTitle": "Elementary Zulu II",
-    "courseSectionInformation": "Same as AFST 252. Participation in the language laboratory is required. Prerequisite: ZULU 201.",
-    "description": "Continuation of ZULU 201 with introduction of more advanced grammar; emphasis on more fluency in speaking, reading, and writing simple sentences in standard Zulu. Same as AFST 252. Participation in the language laboratory is required. Prerequisite: ZULU 201.",
-    "term": "Fall 2020",
-    "courseId": "ZULU 202",
-    "sections": [{
-        "name": "A",
-        "href": "https://courses.illinois.edu/cisapp/explorer/schedule/2020/fall/ZULU/202/71955.xml",
-        "crn": 71955
-    }]
-}}
+{
+  "parents" : {
+    "calendarYear" : {
+      "id" : 2020,
+      "href" : "https://courses.illinois.edu/cisapp/explorer/schedule/2020.xml",
+      "year" : 2020
+    },
+    "term" : {
+      "href" : "https://courses.illinois.edu/cisapp/explorer/schedule/2020/fall.xml",
+      "semester" : "Fall 2020"
+    },
+    "subject" : {
+      "id" : "ZULU",
+      "href" : "https://courses.illinois.edu/cisapp/explorer/schedule/2020/fall/ZULU.xml",
+      "subject" : "Zulu"
+    }
+  },
+  "label" : "Elementary Zulu II",
+  "description" : "Continuation of ZULU 201 with introduction of more advanced grammar; emphasis on more fluency in speaking, reading, and writing simple sentences in standard Zulu. Same as AFST 252. Participation in the language laboratory is required. Prerequisite: ZULU 201.",
+  "creditHours" : "5 hours.",
+  "sections" : [ {
+    "id" : "71955",
+    "href" : "https://courses.illinois.edu/cisapp/explorer/schedule/2020/fall/ZULU/202/71955.xml",
+    "name" : "A  "
+  } ]
+}
 ```
 
 ### By Section
@@ -127,27 +157,45 @@ ex. `2020/fall/ZULU/202/71955`
 start/end times, location, etc.
 
 ```json
-{"section": {
-    "courseTitle": "Elementary Zulu II",
-    "sectionStatusCode": "A",
-    "endDate": "2020-12-09Z",
-    "enrollmentStatus": "Open",
-    "sectionNumber": "A",
-    "course": "ZULU",
-    "partOfTerm": 1,
-    "department": "Zulu",
-    "meeting": {
-        "start": "ARRANGED",
-        "type": {
-            "code": "LCD",
-            "name": "Lecture-Discussion"
-        },
-        "instructors": [
-            "Gathogo, M",
-            "Saadah, E"
-        ]
+{
+  "parents" : {
+    "calendarYear" : {
+      "id" : 2020,
+      "href" : "https://courses.illinois.edu/cisapp/explorer/schedule/2020.xml",
+      "year" : 2020
     },
-    "startDate": "2020-08-24Z",
-    "crn": 71955
-}}
+    "term" : {
+      "href" : "https://courses.illinois.edu/cisapp/explorer/schedule/2020/fall.xml",
+      "semester" : "Fall 2020"
+    },
+    "subject" : {
+      "id" : "ZULU",
+      "href" : "https://courses.illinois.edu/cisapp/explorer/schedule/2020/fall/ZULU.xml",
+      "subject" : "Zulu"
+    },
+    "course" : {
+      "id" : "202",
+      "href" : "https://courses.illinois.edu/cisapp/explorer/schedule/2020/fall/ZULU/202.xml",
+      "course" : "Elementary Zulu II"
+    }
+  },
+  "sectionNumber" : "A  ",
+  "partOfTerm" : "1",
+  "enrollmentStatus" : "Open",
+  "startDate" : "2020-08-24Z",
+  "endDate" : "2020-12-09Z",
+  "meetings" : [ {
+    "type" : "Lecture-Discussion",
+    "start" : "ARRANGED",
+    "end" : null,
+    "daysOfTheWeek" : null,
+    "roomNumber" : null,
+    "buildingName" : null,
+    "instructors" : [ {
+      "name" : "Gathogo, M"
+    }, {
+      "name" : "Saadah, E"
+    } ]
+  } ]
+}
 ```
