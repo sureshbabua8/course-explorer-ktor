@@ -79,8 +79,6 @@ fun Application.run() {
         get("/{year}/{term}/{course}/{code}/{section}") {
             call.respond(updateCache(call.request.uri, hour).fromXml<Section>())
         }
-
-
     }
 }
 

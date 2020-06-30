@@ -5,6 +5,44 @@ Databinds XML responses by [UIUC's Course Explorer API](https://courses.illinois
 
 The API wrapper currently provides a `JSON` response to `GET` requests for a given year, term (summer, fall, winter, spring), subject, course, and section.
 
+### All Calendar Years
+The root endpoint returns all of the calendar years that are available for access through cisapi.
+
+```json
+{
+  "label" : "Calendar Years",
+  "calendarYears" : [ {
+    "id" : 2020,
+    "href" : "https://courses.illinois.edu/cisapp/explorer/schedule/2020.xml",
+    "year" : 2020
+  }, {
+    "id" : 2019,
+    "href" : "https://courses.illinois.edu/cisapp/explorer/schedule/2019.xml",
+    "year" : 2019
+  }, {
+    "id" : 2018,
+    "href" : "https://courses.illinois.edu/cisapp/explorer/schedule/2018.xml",
+    "year" : 2018
+  }, {
+    "id" : 2017,
+    "href" : "https://courses.illinois.edu/cisapp/explorer/schedule/2017.xml",
+    "year" : 2017
+  }, {
+    "id" : 2016,
+    "href" : "https://courses.illinois.edu/cisapp/explorer/schedule/2016.xml",
+    "year" : 2016
+  }, {
+    "id" : 2015,
+    "href" : "https://courses.illinois.edu/cisapp/explorer/schedule/2015.xml",
+    "year" : 2015
+  }, {...}, {
+    "id" : 2004,
+    "href" : "https://courses.illinois.edu/cisapp/explorer/schedule/2004.xml",
+    "year" : 2004
+  } ]
+}
+```
+
 ### By Year
 This request returns a response of the given terms (semesters) in a year and original CIS API links for those terms
 ex. endpoint: `/2020`
