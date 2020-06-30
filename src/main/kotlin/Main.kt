@@ -10,6 +10,7 @@ import io.ktor.client.HttpClient
 import io.ktor.client.engine.cio.CIO
 import io.ktor.client.request.get
 import io.ktor.features.ContentNegotiation
+import io.ktor.http.HttpStatusCode
 import io.ktor.jackson.jackson
 import io.ktor.request.uri
 import io.ktor.response.respond
@@ -20,7 +21,7 @@ import io.ktor.server.netty.Netty
 import java.io.File
 
 private val client = HttpClient(CIO)
-private val resDir: String = "src/main/cache/schedule"
+private const val resDir: String = "src/main/cache/schedule"
 
 private suspend fun updateCache(originalUri: String, timeLapse: Long): String {
     val newUri = if (originalUri == "/") {
@@ -42,10 +43,10 @@ private suspend fun updateCache(originalUri: String, timeLapse: Long): String {
 }
 
 fun Application.run() {
-    val year: Long = 31540000000
-    val month: Long = 2628000000
-    val day: Long = 86400000
-    val hour: Long = 3600000
+    val yearMilli: Long = 31540000000
+    val monthMilli: Long = 2628000000
+    val dayMilli: Long = 86400000
+    val hourMilli: Long = 3600000
 
     install(ContentNegotiation) {
         jackson {
@@ -59,25 +60,49 @@ fun Application.run() {
 
     routing {
         get("/") {
-            call.respond(updateCache(call.request.uri, year).fromXml<CalendarYears>())
+            try {
+                call.respond(updateCache(call.request.uri, yearMilli).fromXml<CalendarYears>())
+            } catch (e: Exception) {
+                call.respond(HttpStatusCode.BadRequest)
+            }
         }
         get("/{year}") {
-            call.respond(updateCache(call.request.uri, month).fromXml<ScheduleYear>())
+            try {
+                call.respond(updateCache(call.request.uri, monthMilli).fromXml<ScheduleYear>())
+            } catch (e: Exception) {
+                call.respond(HttpStatusCode.BadRequest)
+            }
 
         }
         get("/{year}/{term}/") {
-            call.respond(updateCache(call.request.uri, day).fromXml<Term>())
+            try {
+                call.respond(updateCache(call.request.uri, dayMilli).fromXml<Term>())
+            } catch (e: Exception) {
+                call.respond(HttpStatusCode.BadRequest)
+            }
         }
 
         get("/{year}/{term}/{course}") {
-            call.respond(updateCache(call.request.uri, hour).fromXml<Department>())
+            try {
+                call.respond(updateCache(call.request.uri, hourMilli).fromXml<Department>())
+            } catch (e: Exception) {
+                call.respond(HttpStatusCode.BadRequest)
+            }
         }
 
         get("/{year}/{term}/{course}/{code}") {
-            call.respond(updateCache(call.request.uri, hour).fromXml<SubjectCourse>())
+            try {
+                call.respond(updateCache(call.request.uri, hourMilli).fromXml<SubjectCourse>())
+            } catch (e: Exception) {
+                call.respond(HttpStatusCode.BadRequest)
+            }
         }
         get("/{year}/{term}/{course}/{code}/{section}") {
-            call.respond(updateCache(call.request.uri, hour).fromXml<Section>())
+            try {
+                call.respond(updateCache(call.request.uri, hourMilli).fromXml<Section>())
+            } catch (e: Exception) {
+                call.respond(HttpStatusCode.BadRequest)
+            }
         }
     }
 }
