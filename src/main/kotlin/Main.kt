@@ -18,29 +18,6 @@ import io.ktor.routing.get
 import io.ktor.routing.routing
 import io.ktor.server.engine.embeddedServer
 import io.ktor.server.netty.Netty
-import java.io.File
-
-private val client = HttpClient(CIO)
-private const val resDir: String = "src/main/cache/schedule"
-
-private suspend fun updateCache(originalUri: String, timeLapse: Long): String {
-    val newUri = if (originalUri == "/") {
-        originalUri.trim('/')
-    } else {
-        originalUri
-    }
-    val path: String = resDir + originalUri.replace('/', '-')
-    val xmlString: String
-    val file: File = File("$path.xml")
-    if (file.exists() && file.lastModified() < timeLapse) {
-        xmlString = file.readText()
-    } else {
-        xmlString = client.get("https://courses.illinois.edu/cisapp/explorer/schedule$newUri.xml")
-        File("$path.xml").writeText(xmlString)
-    }
-
-    return xmlString
-}
 
 fun Application.run() {
     val yearMilli: Long = 31540000000
@@ -97,6 +74,7 @@ fun Application.run() {
                 call.respond(HttpStatusCode.BadRequest)
             }
         }
+
         get("/{year}/{term}/{course}/{code}/{section}") {
             try {
                 call.respond(updateCache(call.request.uri, hourMilli).fromXml<Section>())
