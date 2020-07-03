@@ -41,6 +41,8 @@ suspend fun loadSemesterCourses(): Unit {
     // go through all departments for the Fall 2020 semester
     val semester: Term = client.get<String>("https://courses.illinois.edu/cisapp/explorer/schedule/2020/fall.xml").fromXml()
     for (subject in semester.subjects) {
+        // get ID from subject
+        val id = subject.id
         // load all departments' courses
         val dept: Department = client.get<String>(subject.href.toURL()).fromXml()
         // add to list of courses
