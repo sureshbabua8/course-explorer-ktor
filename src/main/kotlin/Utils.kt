@@ -9,6 +9,8 @@ private const val resDir: String = "src/main/cache/schedule"
 private val client = HttpClient(CIO)
 private var cacheMap: MutableMap<String, String> = HashMap() // maps path-dir to xmlString
 private var timeStampMap: MutableMap<String, Long> = HashMap() // maps path-dir to timeStamp of XML object
+private val courses = mutableListOf<Department.Course>()
+
 
 suspend fun updateCache(originalUri: String, timeLapse: Long): String? {
     val path: String = resDir + originalUri
@@ -31,6 +33,23 @@ suspend fun updateCache(originalUri: String, timeLapse: Long): String? {
     }
 
     return cacheMap[path]
+}
+
+suspend fun loadSemesterCourses(): Unit {
+    // load all departments' courses
+    // return list
+    // go through all departments for the Fall 2020 semester
+    val semester: Term = client.get<String>("https://courses.illinois.edu/cisapp/explorer/schedule/2020/fall.xml").fromXml()
+    for (subject in semester.subjects) {
+        // load all departments' courses
+        val dept: Department = client.get<String>(subject.href.toURL()).fromXml()
+        // add to list of courses
+        courses.addAll(dept.courses)
+    }
+}
+
+fun getSemesterCourses(): List<Department.Course> {
+    return courses
 }
 
 
