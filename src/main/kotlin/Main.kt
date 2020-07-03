@@ -37,49 +37,80 @@ fun Application.run() {
 
     routing {
         get("/") {
-            try {
-                call.respond(updateCache(call.request.uri, yearMilli).fromXml<CalendarYears>())
-            } catch (e: Exception) {
-                call.respond(HttpStatusCode.BadRequest)
+            val xml: String? = updateCache(call.request.uri, yearMilli)
+            if (xml != null) {
+                try {
+                    call.respond(xml.fromXml<CalendarYears>())
+                } catch (e: Exception) {
+                    call.respond(HttpStatusCode.BadRequest)
+                }
+            } else {
+                call.respond(HttpStatusCode.NotFound)
             }
+
         }
         get("/{year}") {
-            try {
-                call.respond(updateCache(call.request.uri, monthMilli).fromXml<ScheduleYear>())
-            } catch (e: Exception) {
-                call.respond(HttpStatusCode.BadRequest)
+            val xml: String? = updateCache(call.request.uri, monthMilli)
+            if (xml != null) {
+                try {
+                    call.respond(xml.fromXml<ScheduleYear>())
+                } catch (e: Exception) {
+                    call.respond(HttpStatusCode.BadRequest)
+                }
+            } else {
+                call.respond(HttpStatusCode.NotFound)
             }
 
         }
         get("/{year}/{term}/") {
-            try {
-                call.respond(updateCache(call.request.uri, dayMilli).fromXml<Term>())
-            } catch (e: Exception) {
-                call.respond(HttpStatusCode.BadRequest)
+            val xml:String? = updateCache(call.request.uri, dayMilli)
+            if (xml != null) {
+                try {
+                    call.respond(xml.fromXml<Term>())
+                } catch (e: Exception) {
+                    call.respond(HttpStatusCode.BadRequest)
+                }
+            } else {
+                call.respond(HttpStatusCode.NotFound)
             }
         }
 
         get("/{year}/{term}/{course}") {
-            try {
-                call.respond(updateCache(call.request.uri, hourMilli).fromXml<Department>())
-            } catch (e: Exception) {
-                call.respond(HttpStatusCode.BadRequest)
+            val xml:String? = updateCache(call.request.uri, hourMilli)
+            if (xml != null) {
+                try {
+                    call.respond(xml.fromXml<Department>())
+                } catch (e: Exception) {
+                    call.respond(HttpStatusCode.BadRequest)
+                }
+            } else {
+                call.respond(HttpStatusCode.NotFound)
             }
         }
 
         get("/{year}/{term}/{course}/{code}") {
-            try {
-                call.respond(updateCache(call.request.uri, hourMilli).fromXml<SubjectCourse>())
-            } catch (e: Exception) {
-                call.respond(HttpStatusCode.BadRequest)
+            val xml: String? = updateCache(call.request.uri, hourMilli)
+            if (xml != null) {
+                try {
+                    call.respond(xml.fromXml<SubjectCourse>())
+                } catch (e: Exception) {
+                    call.respond(HttpStatusCode.BadRequest)
+                }
+            } else {
+                call.respond(HttpStatusCode.NotFound)
             }
         }
 
         get("/{year}/{term}/{course}/{code}/{section}") {
-            try {
-                call.respond(updateCache(call.request.uri, hourMilli).fromXml<Section>())
-            } catch (e: Exception) {
-                call.respond(HttpStatusCode.BadRequest)
+            val xml: String? = updateCache(call.request.uri, hourMilli)
+            if (xml != null) {
+                try {
+                    call.respond(xml.fromXml<Section>())
+                } catch (e: Exception) {
+                    call.respond(HttpStatusCode.BadRequest)
+                }
+            } else {
+                call.respond(HttpStatusCode.NotFound)
             }
         }
     }

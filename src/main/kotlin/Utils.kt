@@ -10,25 +10,27 @@ private val client = HttpClient(CIO)
 private var cacheMap: MutableMap<String, String> = HashMap() // maps path-dir to xmlString
 private var timeStampMap: MutableMap<String, Long> = HashMap() // maps path-dir to timeStamp of XML object
 
-suspend fun updateCache(originalUri: String, timeLapse: Long): String {
+suspend fun updateCache(originalUri: String, timeLapse: Long): String? {
+    val path: String = resDir + originalUri
     val newUri = if (originalUri == "/") {
         originalUri.trim('/')
     } else {
         originalUri
     }
 
-    val path: String = resDir + originalUri.replace('/', '-')
-    val xmlString: String
-    val file: File = File("$path.xml")
+    if (cacheMap.containsKey(path) && System.currentTimeMillis() - timeStampMap[path]!! < timeLapse) {
+        return cacheMap[path]
+    } else {
+        try {
+            val xmlString: String = client.get("https://courses.illinois.edu/cisapp/explorer/schedule$newUri.xml")
+            cacheMap[path] = xmlString
+            timeStampMap[path] = System.currentTimeMillis()
+        } catch (e: Exception) {
+            return null
+        }
+    }
 
-//    if (file.exists() && file.lastModified() < timeLapse) {
-//        xmlString = file.readText()
-//    } else {
-//        xmlString = client.get("https://courses.illinois.edu/cisapp/explorer/schedule$newUri.xml")
-//        File("$path.xml").writeText(xmlString)
-//    }
-
-    return xmlString
+    return cacheMap[path]
 }
 
 
