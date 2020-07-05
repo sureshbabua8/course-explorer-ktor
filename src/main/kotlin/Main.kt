@@ -49,7 +49,7 @@ fun Application.run() {
             }
 
         }
-        get("/courses") {
+        get("{year}/{term}/courses") {
             call.respond(getSemesterCourses())
         }
         get("/{year}") {

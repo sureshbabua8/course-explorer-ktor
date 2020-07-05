@@ -8,7 +8,7 @@ import com.fasterxml.jackson.dataformat.xml.XmlMapper
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty
 import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import java.net.URI
-
+import javafx.scene.control.Hyperlink
 
 internal val xmlMapper: ObjectMapper = XmlMapper(
     JacksonXmlModule().apply {
