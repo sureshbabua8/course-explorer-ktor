@@ -9,7 +9,7 @@ private const val resDir: String = "src/main/cache/schedule"
 private val client = HttpClient(CIO)
 private var cacheMap: MutableMap<String, String> = HashMap() // maps path-dir to xmlString
 private var timeStampMap: MutableMap<String, Long> = HashMap() // maps path-dir to timeStamp of XML object
-private val courses = mutableListOf<Department.Course>()
+private var semesterCourses: MutableMap<String, List<Department.Course>> = HashMap()
 
 
 suspend fun updateCache(originalUri: String, timeLapse: Long): String? {
@@ -35,11 +35,17 @@ suspend fun updateCache(originalUri: String, timeLapse: Long): String? {
     return cacheMap[path]
 }
 
-suspend fun loadSemesterCourses(): Unit {
+suspend fun loadSemesterCourses(year: String, term: String): Unit {
     // load all departments' courses
     // return list
     // go through all departments for the Fall 2020 semester
-    val semester: Term = client.get<String>("https://courses.illinois.edu/cisapp/explorer/schedule/2020/fall.xml").fromXml()
+    val courses = mutableListOf<Department.Course>()
+    val semester: Term
+    try {
+        semester = client.get<String>("https://courses.illinois.edu/cisapp/explorer/schedule/$year/$term.xml").fromXml()
+    } catch (e: Exception) {
+        return
+    }
     for (subject in semester.subjects) {
         // get ID from subject
         val id = subject.id
@@ -48,10 +54,17 @@ suspend fun loadSemesterCourses(): Unit {
         // add to list of courses
         courses.addAll(dept.courses)
     }
+    semesterCourses["/$year/$term"] = courses
+
 }
 
-fun getSemesterCourses(): List<Department.Course> {
-    return courses
+suspend fun getSemesterCourses(year: String, term: String): List<Department.Course>? {
+    if (semesterCourses.containsKey("/$year/$term")) {
+        return semesterCourses["/$year/$term"]
+    } else {
+        loadSemesterCourses(year, term)
+        return semesterCourses["/$year/$term"]
+    }
 }
 
 

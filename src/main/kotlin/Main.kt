@@ -50,7 +50,7 @@ fun Application.run() {
 
         }
         get("{year}/{term}/courses") {
-            call.respond(getSemesterCourses())
+            call.respond(getSemesterCourses(call.parameters["year"]!!, call.parameters["term"]!!)!!)
         }
         get("/{year}") {
             val xml: String? = updateCache(call.request.uri, monthMilli)
@@ -120,7 +120,7 @@ fun Application.run() {
 }
 
 suspend fun main(args: Array<String>) {
-    loadSemesterCourses()
+    loadSemesterCourses("2020", "fall")
     embeddedServer(Netty, port = 8080, module = Application::run).start(wait = true)
 }
 
