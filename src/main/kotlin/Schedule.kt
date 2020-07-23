@@ -8,7 +8,6 @@ import com.fasterxml.jackson.dataformat.xml.XmlMapper
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty
 import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import java.net.URI
-import javafx.scene.control.Hyperlink
 
 internal val xmlMapper: ObjectMapper = XmlMapper(
     JacksonXmlModule().apply {
@@ -65,7 +64,7 @@ data class Department(
     )
 }
 
-data class SubjectCourse (
+data class SubjectCourse(
     val parents: Parents,
     val label: String?,
     val description: String?,
@@ -77,7 +76,7 @@ data class SubjectCourse (
     data class Section(val id: String?, val href: URI, @JacksonXmlProperty(localName = "innerText") val name: String?)
 }
 
-data class Section (
+data class Section(
     val parents: Parents,
     val sectionNumber: String?,
     val partOfTerm: String?,

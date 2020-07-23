@@ -6,8 +6,6 @@ import com.fasterxml.jackson.databind.SerializationFeature
 import io.ktor.application.Application
 import io.ktor.application.call
 import io.ktor.application.install
-import io.ktor.client.HttpClient
-import io.ktor.client.engine.cio.CIO
 import io.ktor.client.request.get
 import io.ktor.features.ContentNegotiation
 import io.ktor.http.HttpStatusCode
@@ -47,7 +45,9 @@ fun Application.run() {
             } else {
                 call.respond(HttpStatusCode.NotFound)
             }
-
+        }
+        get("/courses") {
+            call.respond(getSemesterCourses("2020", "summer")!!)
         }
         get("{year}/{term}/courses") {
             call.respond(getSemesterCourses(call.parameters["year"]!!, call.parameters["term"]!!)!!)
@@ -63,10 +63,9 @@ fun Application.run() {
             } else {
                 call.respond(HttpStatusCode.NotFound)
             }
-
         }
         get("/{year}/{term}/") {
-            val xml:String? = updateCache(call.request.uri, dayMilli)
+            val xml: String? = updateCache(call.request.uri, dayMilli)
             if (xml != null) {
                 try {
                     call.respond(xml.fromXml<Term>())
@@ -79,7 +78,7 @@ fun Application.run() {
         }
 
         get("/{year}/{term}/{course}") {
-            val xml:String? = updateCache(call.request.uri, hourMilli)
+            val xml: String? = updateCache(call.request.uri, hourMilli)
             if (xml != null) {
                 try {
                     call.respond(xml.fromXml<Department>())
@@ -120,8 +119,6 @@ fun Application.run() {
 }
 
 suspend fun main(args: Array<String>) {
-    loadSemesterCourses("2020", "fall")
+    loadSemesterCourses("2020", "summer")
     embeddedServer(Netty, port = 8080, module = Application::run).start(wait = true)
 }
-
-

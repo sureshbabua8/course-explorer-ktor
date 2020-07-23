@@ -3,14 +3,12 @@ package hello
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.cio.CIO
 import io.ktor.client.request.get
-import java.io.File
 
 private const val resDir: String = "src/main/cache/schedule"
 private val client = HttpClient(CIO)
 private var cacheMap: MutableMap<String, String> = HashMap() // maps path-dir to xmlString
 private var timeStampMap: MutableMap<String, Long> = HashMap() // maps path-dir to timeStamp of XML object
 private var semesterCourses: MutableMap<String, List<Department.Course>> = HashMap()
-
 
 suspend fun updateCache(originalUri: String, timeLapse: Long): String? {
     val path: String = resDir + originalUri
@@ -35,7 +33,7 @@ suspend fun updateCache(originalUri: String, timeLapse: Long): String? {
     return cacheMap[path]
 }
 
-suspend fun loadSemesterCourses(year: String, term: String): Unit {
+suspend fun loadSemesterCourses(year: String, term: String) {
     // load all departments' courses
     // return list
     // go through all departments for the Fall 2020 semester
@@ -55,7 +53,6 @@ suspend fun loadSemesterCourses(year: String, term: String): Unit {
         courses.addAll(dept.courses)
     }
     semesterCourses["/$year/$term"] = courses
-
 }
 
 suspend fun getSemesterCourses(year: String, term: String): List<Department.Course>? {
@@ -66,6 +63,3 @@ suspend fun getSemesterCourses(year: String, term: String): List<Department.Cour
         return semesterCourses["/$year/$term"]
     }
 }
-
-
-

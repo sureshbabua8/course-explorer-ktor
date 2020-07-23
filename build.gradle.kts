@@ -1,13 +1,18 @@
 plugins {
     kotlin("jvm") version "1.3.61"
+    application
     id("org.jlleitschuh.gradle.ktlint") version "9.2.1"
     id("org.openjfx.javafxplugin") version "0.0.8"
+    id("com.github.johnrengelman.shadow") version "6.0.0"
+//    id("application")
 }
 
 version = "1.0-SNAPSHOT"
 
 repositories {
+    gradlePluginPortal()
     mavenCentral()
+    maven(url = "https://plugins.gradle.org/m2/")
 }
 
 dependencies {
@@ -24,13 +29,11 @@ dependencies {
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.11.0")
     implementation("com.fasterxml.jackson.core:jackson-databind:2.11.0")
     implementation("io.ktor:ktor-jackson:$ktorVersion")
-//    implementation("com.fasterxml.jackson.module:jackson-module-jaxb-annotations:2.11.0")
     implementation("org.json:json:20200518")
 
     testImplementation("io.kotlintest:kotlintest-runner-junit5:3.3.0")
     testImplementation("org.junit.jupiter:junit-jupiter:5.6.2")
     testImplementation("io.ktor:ktor-server-test-host:$ktorVersion")
-
 }
 
 javafx {
@@ -47,5 +50,19 @@ tasks {
     }
     compileTestKotlin {
         kotlinOptions.jvmTarget = "1.8"
+    }
+}
+
+application {
+    mainClassName = "io.ktor.server.netty.EngineMain"
+}
+
+tasks.withType<Jar> {
+    manifest {
+        attributes(
+            mapOf(
+                "Main-Class" to application.mainClassName
+            )
+        )
     }
 }
