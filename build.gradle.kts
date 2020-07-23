@@ -1,5 +1,5 @@
 plugins {
-    kotlin("jvm") version "1.3.61"
+    kotlin("jvm") version "1.3.71"
     application
     id("org.jlleitschuh.gradle.ktlint") version "9.2.1"
     id("org.openjfx.javafxplugin") version "0.0.8"
@@ -25,6 +25,7 @@ dependencies {
     implementation("io.ktor:ktor-server-netty:$ktorVersion")
     implementation("io.ktor:ktor-gson:$ktorVersion")
     implementation("com.google.code.gson:gson:2.8.6")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.3.8")
     implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-xml:2.11.0")
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.11.0")
     implementation("com.fasterxml.jackson.core:jackson-databind:2.11.0")
@@ -54,7 +55,7 @@ tasks {
 }
 
 application {
-    mainClassName = "src/main/kotlin/MainKt"
+    mainClassName = "hello.MainKt"
 }
 
 tasks.withType<Jar> {

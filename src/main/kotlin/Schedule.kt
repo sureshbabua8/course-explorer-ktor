@@ -97,10 +97,10 @@ data class Section(
         val type: String?,
         val start: String?,
         // nullable attributes
-        val end: String??,
-        val daysOfTheWeek: String??,
-        val roomNumber: String??,
-        val buildingName: String??,
+        val end: String?,
+        val daysOfTheWeek: String?,
+        val roomNumber: String?,
+        val buildingName: String?,
 
         val instructors: List<Instructor>
     ) {
