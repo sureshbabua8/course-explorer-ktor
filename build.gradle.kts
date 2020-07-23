@@ -54,7 +54,7 @@ tasks {
 }
 
 application {
-    mainClassName = "io.ktor.server.netty.EngineMain"
+    mainClassName = "src/main/kotlin/MainKt"
 }
 
 tasks.withType<Jar> {
