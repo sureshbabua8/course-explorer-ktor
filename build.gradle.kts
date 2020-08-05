@@ -4,6 +4,7 @@ plugins {
     id("org.jlleitschuh.gradle.ktlint") version "9.2.1"
     id("org.openjfx.javafxplugin") version "0.0.8"
     id("com.github.johnrengelman.shadow") version "6.0.0"
+    id("com.palantir.docker") version "0.25.0"
 //    id("application")
 }
 
@@ -39,6 +40,12 @@ dependencies {
 
 javafx {
     modules("javafx.controls")
+}
+
+docker {
+    name = "course-explorer-ktor"
+    files(tasks["shadowJar"].outputs)
+//    dockerfile = File('Dockerfile')
 }
 
 tasks.withType<Test> {

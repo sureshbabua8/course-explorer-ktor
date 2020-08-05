@@ -47,7 +47,7 @@ fun Application.run() {
             }
         }
         get("/courses") {
-            call.respond(getSemesterCourses("2020", "summer")!!)
+            call.respond(getSemesterCourses("2020", "fall")!!)
         }
         get("{year}/{term}/courses") {
             call.respond(getSemesterCourses(call.parameters["year"]!!, call.parameters["term"]!!)!!)
@@ -119,6 +119,6 @@ fun Application.run() {
 }
 
 suspend fun main(args: Array<String>) {
-    loadSemesterCourses("2020", "summer")
+    loadSemesterCourses("2020", "fall")
     embeddedServer(Netty, port = 8080, module = Application::run).start(wait = true)
 }
